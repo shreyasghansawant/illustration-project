@@ -1,0 +1,249 @@
+ILLUSTRATION PERSONALIZER - ARCHITECTURE DIAGRAM
+==================================================
+
+┌─────────────────────────────────────────────────────────────┐
+│                    CLIENT LAYER                              │
+│                  (Next.js Frontend)                          │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Upload Interface                                    │   │
+│  │  • Drag & Drop Zone                                  │   │
+│  │  • File Input                                        │   │
+│  │  • Preview Display                                   │   │
+│  └───────────────────────┬──────────────────────────────┘   │
+│                          │                                    │
+│  ┌───────────────────────▼──────────────────────────────┐   │
+│  │  API Client (Axios)                                  │   │
+│  │  POST /api/personalize                               │   │
+│  │  Content-Type: multipart/form-data                    │   │
+│  └───────────────────────┬──────────────────────────────┘   │
+│                          │                                    │
+│  ┌───────────────────────▼──────────────────────────────┐   │
+│  │  Result Display                                      │   │
+│  │  • Image Preview                                     │   │
+│  │  • Download Button                                   │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          │ HTTPS
+                          │
+┌─────────────────────────▼─────────────────────────────────────┐
+│                    API LAYER                                    │
+│                  (FastAPI Backend)                             │
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────┐     │
+│  │  Endpoint: POST /api/personalize                      │     │
+│  │  • File Upload Handler                                │     │
+│  │  • Request Validation                                 │     │
+│  └───────────────────────┬──────────────────────────────┘     │
+│                          │                                      │
+│  ┌───────────────────────▼──────────────────────────────┐     │
+│  │  Image Preprocessor                                   │     │
+│  │  • Format Conversion (RGB)                            │     │
+│  │  • Size Optimization (max 1024px)                     │     │
+│  │  • Validation                                         │     │
+│  └───────────────────────┬──────────────────────────────┘     │
+│                          │                                      │
+│  ┌───────────────────────▼──────────────────────────────┐     │
+│  │  Template Loader (Optional)                          │     │
+│  │  • Load template.png                                 │     │
+│  │  • Custom template support                           │     │
+│  └───────────────────────┬──────────────────────────────┘     │
+│                          │                                      │
+│  ┌───────────────────────▼──────────────────────────────┐     │
+│  │  AI Service Client                                    │     │
+│  │  • Replicate SDK                                      │     │
+│  │  • Instant-ID / IP-Adapter FaceID                     │     │
+│  │  • Error Handling & Fallback                         │     │
+│  └───────────────────────┬──────────────────────────────┘     │
+│                          │                                      │
+│                          │ API Request                          │
+│                          │                                      │
+└──────────────────────────┼──────────────────────────────────────┘
+                           │
+                           │
+┌──────────────────────────▼──────────────────────────────────────┐
+│                    AI SERVICE LAYER                              │
+│              (Replicate Cloud Platform)                          │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────┐       │
+│  │  Face Encoder                                        │       │
+│  │  • Extract facial features                          │       │
+│  │  • Generate face embeddings                         │       │
+│  └───────────────────────┬──────────────────────────────┘       │
+│                          │                                      │
+│  ┌───────────────────────▼──────────────────────────────┐       │
+│  │  Style Encoder                                        │       │
+│  │  • Process text prompt                               │       │
+│  │  • Extract style features                           │       │
+│  └───────────────────────┬──────────────────────────────┘       │
+│                          │                                      │
+│  ┌───────────────────────▼──────────────────────────────┐       │
+│  │  Diffusion Model (UNet)                              │       │
+│  │  • Generate stylized image                           │       │
+│  │  • Apply illustration style                          │       │
+│  └───────────────────────┬──────────────────────────────┘       │
+│                          │                                      │
+│  ┌───────────────────────▼──────────────────────────────┐       │
+│  │  Face Adapter                                        │       │
+│  │  • Preserve facial identity                          │       │
+│  │  • Blend with style                                  │       │
+│  └───────────────────────┬──────────────────────────────┘       │
+│                          │                                      │
+│  ┌───────────────────────▼──────────────────────────────┐       │
+│  │  Output: Stylized Face Image                         │       │
+│  │  • PNG format                                        │       │
+│  │  • High quality                                      │       │
+│  └──────────────────────────────────────────────────────┘       │
+└──────────────────────────────────────────────────────────────────┘
+                          │
+                          │ Return Image URL
+                          │
+┌──────────────────────────▼──────────────────────────────────────┐
+│                    COMPOSITING LAYER                             │
+│                  (Backend Processing)                            │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────┐       │
+│  │  Template Compositor                                  │       │
+│  │  • Load template (if available)                     │       │
+│  │  • Resize face to fit                                │       │
+│  │  • Composite face into template                     │       │
+│  │  • Blend and finalize                                │       │
+│  └───────────────────────┬──────────────────────────────┘       │
+│                          │                                      │
+│  ┌───────────────────────▼──────────────────────────────┐       │
+│  │  Final Image Generator                                │       │
+│  │  • Encode as PNG                                      │       │
+│  │  • Prepare response                                   │       │
+│  └───────────────────────┬──────────────────────────────┘       │
+│                          │                                      │
+└──────────────────────────┼──────────────────────────────────────┘
+                           │
+                           │ PNG Binary Response
+                           │
+┌──────────────────────────▼──────────────────────────────────────┐
+│                    CLIENT LAYER                                  │
+│                  (Result Display)                                │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────┐       │
+│  │  Result Display                                      │       │
+│  │  • Show personalized illustration                    │       │
+│  │  • Download functionality                           │       │
+│  │  • User feedback                                    │       │
+│  └──────────────────────────────────────────────────────┘       │
+└──────────────────────────────────────────────────────────────────┘
+
+
+DATA FLOW SUMMARY
+==================
+
+1. USER UPLOADS PHOTO
+   └─> Frontend receives file
+   └─> Creates FormData
+   └─> POST to /api/personalize
+
+2. BACKEND PROCESSES
+   └─> Validates file type
+   └─> Converts to RGB
+   └─> Resizes if needed
+   └─> Loads template (optional)
+
+3. AI PROCESSING
+   └─> Sends to Replicate API
+   └─> Instant-ID processes image
+   └─> Returns stylized face
+
+4. COMPOSITING
+   └─> Composite into template
+   └─> Final image generation
+
+5. RESPONSE
+   └─> PNG binary to frontend
+   └─> Display to user
+   └─> Download option
+
+
+COMPONENT INTERACTIONS
+======================
+
+Frontend (Next.js)
+    │
+    ├─> HTTP POST /api/personalize
+    │
+Backend (FastAPI)
+    │
+    ├─> Image Preprocessing
+    │
+    ├─> Replicate API Call
+    │   │
+    │   └─> Instant-ID Model
+    │       │
+    │       ├─> Face Encoding
+    │       ├─> Style Transfer
+    │       └─> Image Generation
+    │
+    ├─> Template Compositing
+    │
+    └─> PNG Response
+        │
+        └─> Frontend Display
+
+
+TECHNOLOGY STACK
+================
+
+Frontend:
+  • Next.js 14 (React Framework)
+  • TypeScript (Type Safety)
+  • Axios (HTTP Client)
+  • CSS (Styling)
+
+Backend:
+  • FastAPI (Python Web Framework)
+  • Pillow (Image Processing)
+  • Replicate SDK (AI Service)
+  • Uvicorn (ASGI Server)
+
+AI Service:
+  • Replicate Platform
+  • Instant-ID / IP-Adapter FaceID
+  • Cloud-based Processing
+
+Storage:
+  • Local File System (Templates)
+  • In-Memory Processing (Images)
+
+
+PERFORMANCE CHARACTERISTICS
+===========================
+
+Upload Time:        < 1 second
+Processing Time:    10-30 seconds (AI)
+Compositing Time:   < 1 second
+Total Response:     10-35 seconds
+
+Image Limits:
+  • Input:  Any size (auto-resized to 1024px)
+  • Output: PNG format
+  • Max Size: Limited by memory
+
+Concurrency:
+  • Current: Synchronous (one at a time)
+  • Future: Async queue system
+
+
+ERROR HANDLING FLOW
+===================
+
+Request
+  │
+  ├─> Invalid File Type → 400 Error
+  │
+  ├─> Missing API Token → Fallback Processing
+  │
+  ├─> Replicate API Error → Fallback + Error Log
+  │
+  ├─> Processing Error → 500 Error
+  │
+  └─> Success → PNG Response
+
