@@ -170,14 +170,19 @@ async def process_with_instant_id(user_image: Image.Image, template_image: Optio
         
         create_url = f"https://api.replicate.com/v1/models/{model_name}/predictions"
         response = requests.post(create_url, json=prediction_data, headers=headers)
-        response.raise_for_status()
+        
+        if response.status_code != 201:
+            error_msg = response.text
+            print(f"Replicate API error: {response.status_code} - {error_msg}")
+            raise Exception(f"Replicate API error: {response.status_code} - {error_msg}")
         
         prediction = response.json()
         prediction_id = prediction.get("id")
         prediction_url = prediction.get("urls", {}).get("get")
         
         if not prediction_id or not prediction_url:
-            raise Exception("Failed to create prediction")
+            print(f"Failed to create prediction. Response: {prediction}")
+            raise Exception("Failed to create prediction - missing id or url")
         
         # Poll for completion
         max_attempts = 60  # 5 minutes max
