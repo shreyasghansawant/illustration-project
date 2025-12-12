@@ -115,6 +115,10 @@ async def personalize_illustration(
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Error processing image: {str(e)}")
+        print(f"Traceback: {error_details}")
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
 
