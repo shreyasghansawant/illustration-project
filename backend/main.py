@@ -18,7 +18,10 @@ app = FastAPI(title="Illustration Personalizer API")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend URL
+    allow_origins=[
+        "http://localhost:3000",
+        "https://patient-warmth-production.up.railway.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
